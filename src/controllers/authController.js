@@ -88,8 +88,55 @@ const getProfile = async (req, res) => {
   }
 };
 
+// Update user profile controller
+const addFitnessData = async (req, res) => {
+    try {
+      const { fitnessData } = req.body;
+  
+      const user = await User.findById(req.user._id);
+      if (!user) return res.status(404).json({ message: 'User not found' });
+  
+      // ✅ Initialize fitnessData if missing
+      if (!user.fitnessData) {
+        user.fitnessData = {};
+      }
+  
+      if (fitnessData) {
+        if (fitnessData.birthDate) {
+          user.fitnessData.birthDate = new Date(fitnessData.birthDate);
+        }
+  
+        if (fitnessData.weight) {
+          user.fitnessData.weight = fitnessData.weight.map(w => ({
+            value: w.value,
+            date: w.date ? new Date(w.date) : new Date(),
+          }));
+        }
+  
+        if (fitnessData.sex) {
+          user.fitnessData.sex = fitnessData.sex;
+        }
+  
+        if (fitnessData.fitnessGoals) {
+          // Optional: Convert comma string to array
+          user.fitnessData.fitnessGoals = fitnessData.fitnessGoals
+        }
+      }
+  
+      await user.save();
+      res.json(user);
+    } catch (error) {
+      console.error('🔥 Error updating profile:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  };
+  
+
+
+
 module.exports = {
   signup,
   login,
-  getProfile
+  getProfile,
+  addFitnessData
 }; 
